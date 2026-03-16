@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @import './styles/layout.css';
 @import './styles/components.css';
 @import './styles/tasks.css';
@@ -11,12 +12,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+=======
+>>>>>>> fb7bba87312fd7963452c73941aa50a96ee16749
 html,
 body,
 #root {
   margin: 0;
   padding: 0;
   width: 100%;
+<<<<<<< HEAD
   height: 100vh;
   background-color: var(--bg-main);
   color: var(--text-main);
@@ -53,4 +57,7 @@ hr {
   border: 0;
   border-top: 1px solid var(--border);
   margin: 2rem 0;
+=======
+  height: 100%;
+>>>>>>> fb7bba87312fd7963452c73941aa50a96ee16749
 }
