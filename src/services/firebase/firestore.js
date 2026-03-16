@@ -37,6 +37,23 @@ export const createUserProfile = async (user) => {
   }
 };
 
+export const getUserProfile = async (uid) => {
+  const snapshot = await getDoc(doc(db, "users", uid));
+  return snapshot.exists() ? snapshot.data() : null;
+};
+
+export const updateUserPreferences = async (uid, newPreferences) => {
+  const userRef = doc(db, "users", uid);
+  const snap = await getDoc(userRef);
+  if (snap.exists()) {
+    const currentPrefs = snap.data().preferences || {};
+    await updateDoc(userRef, {
+      preferences: { ...currentPrefs, ...newPreferences },
+      updatedAt: serverTimestamp(),
+    });
+  }
+};
+
 // -- PROJECTS --
 export const createProject = async ({ title, description, ownerId }) => {
   const docRef = await addDoc(collection(db, "projects"), {

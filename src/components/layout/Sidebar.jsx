@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { logoutUser } from "../../services/firebase/auth";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { SettingsModal } from "../ui/SettingsModal";
 import "../../styles/sidebar.css";
 
 // SVG Icons inline para no instalar librerías pesadas si no es vital (Lucide style)
@@ -11,10 +12,12 @@ const ProjectsIcon = () => <svg className="nav-icon" viewBox="0 0 24 24" fill="n
 const ResourcesIcon = () => <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
 const TasksIcon = () => <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>;
 const LogoutIcon = () => <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
+const SettingsIcon = () => <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
 
 export const Sidebar = () => {
   const { user } = useAuth();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -58,6 +61,9 @@ export const Sidebar = () => {
         </nav>
 
         <div className="sidebar-footer">
+          <button className="btn-logout" style={{ marginBottom: '0.5rem', background: 'transparent', color: 'var(--text-main)' }} onClick={() => setIsSettingsModalOpen(true)}>
+            <SettingsIcon /> Apariencia
+          </button>
           <button className="btn-logout" onClick={() => setIsLogoutModalOpen(true)}>
             <LogoutIcon /> Salir
           </button>
@@ -68,9 +74,14 @@ export const Sidebar = () => {
       {/* El AppLayout lo renderizará si está en móvil */}
       <div className="mobile-top-header">
          <div className="mobile-top-brand">Recolector</div>
-         <button className="btn-icon" onClick={() => setIsLogoutModalOpen(true)} style={{border: 'none', boxShadow: 'none'}}>
-            <LogoutIcon />
-         </button>
+         <div style={{ display: 'flex', gap: '0.5rem' }}>
+           <button className="btn-icon" onClick={() => setIsSettingsModalOpen(true)} style={{border: 'none', boxShadow: 'none'}}>
+              <SettingsIcon />
+           </button>
+           <button className="btn-icon" onClick={() => setIsLogoutModalOpen(true)} style={{border: 'none', boxShadow: 'none'}}>
+              <LogoutIcon />
+           </button>
+         </div>
       </div>
 
       {/* --- MOBILE BOTTOM NAVIGATION --- */}
@@ -103,6 +114,11 @@ export const Sidebar = () => {
         isDestructive={false}
         onConfirm={handleLogout}
         onCancel={() => setIsLogoutModalOpen(false)}
+      />
+
+      <SettingsModal 
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
       />
     </>
   );

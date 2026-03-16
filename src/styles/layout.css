@@ -47,6 +47,35 @@
   --font-display: 'Outfit', var(--font-base); /* Para títulos y métricas */
 }
 
+/* Dark Mode Theme */
+[data-theme="dark"] {
+  --bg-main: #0B1120;
+  --surface: #1E293B;
+  
+  /* Default professional green accent as requested */
+  --primary: #10B981;
+  --primary-hover: #059669;
+  --primary-light: rgba(16, 185, 129, 0.15);
+  
+  --secondary: #38BDF8;
+  
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  
+  --border: #334155;
+  --border-focus: #475569;
+  
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  
+  /* Elevate shadows in dark mode with dark rgb */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-elevation: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}
+
 /* Layout Core Classes */
 .app-layout {
   display: flex;
