@@ -1,0 +1,221 @@
+/* Kanban Board para Tareas */
+.kanban-board {
+  display: flex;
+  gap: var(--spacing-lg);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-md);
+  min-height: 400px;
+}
+
+.kanban-column {
+  flex: 1;
+  min-width: 320px;
+  background-color: var(--surface);
+  border-radius: 12px;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.kanban-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid;
+}
+
+.kanban-column-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.kanban-column-count {
+  background: var(--bg-main);
+  color: var(--text-muted);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Colores de columna */
+.kanban-column.active .kanban-column-header { border-bottom-color: var(--primary); }
+.kanban-column.overdue .kanban-column-header { border-bottom-color: var(--danger); }
+.kanban-column.completed-col .kanban-column-header { border-bottom-color: var(--success); }
+
+/* Task Card in Kanban */
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  cursor: grab;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-card:active {
+  cursor: grabbing;
+}
+
+.task-card:hover {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.task-card.dragging {
+  opacity: 0.5;
+}
+
+.task-card.completed-task {
+  opacity: 0.8;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+.task-card.completed-task:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.task-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.task-card-title {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.task-card-desc {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.task-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+
+.task-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.task-date.overdue-text {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.mobile-task-menu {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+  display: none;
+  flex-direction: column;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.mobile-task-menu.open {
+  display: flex;
+}
+
+.mobile-task-menu button {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--text-main);
+  cursor: pointer;
+}
+.mobile-task-menu button:last-child {
+  border-bottom: none;
+}
+.mobile-task-menu button:hover {
+  background: var(--bg-main);
+}
+.mobile-task-menu button.text-danger {
+  color: var(--danger);
+}
+.mobile-task-menu button.text-success {
+  color: var(--success);
+}
+
+.btn-dots {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: none; /* hidden on desktop by default if kanban is used */
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .kanban-board {
+    flex-direction: column;
+    height: auto;
+    overflow-x: visible;
+  }
+  .kanban-column {
+    min-width: 100%;
+  }
+  .task-card {
+    cursor: default; /* No drag on mobile */
+  }
+  .task-card:active {
+    cursor: default;
+  }
+  .btn-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .desktop-actions {
+    display: none !important;
+  }
+}
+
+.desktop-actions {
+  display: flex;
+  gap: 0.5rem;
+}

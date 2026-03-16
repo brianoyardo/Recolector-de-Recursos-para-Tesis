@@ -62,6 +62,13 @@ export const deleteProject = async (projectId) => {
   await deleteDoc(doc(db, "projects", projectId));
 };
 
+export const updateProject = async (projectId, updates) => {
+  await updateDoc(doc(db, "projects", projectId), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
 // -- RESOURCES --
 export const createResource = async ({
   title, description, documentType, sourceUrl, sourceName, author,
@@ -88,6 +95,7 @@ export const createResource = async ({
     referenceFormat: { apa: "", ieee: "" },
     chapter: chapter || "",
     isFavorite: false,
+    isArchived: false,
     file: { name: "", path: "", url: "", mimeType: "", size: 0 },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -110,6 +118,13 @@ export const getUserResources = async (ownerId) => {
 
 export const deleteResource = async (resourceId) => {
   await deleteDoc(doc(db, "resources", resourceId));
+};
+
+export const updateResource = async (resourceId, updates) => {
+  await updateDoc(doc(db, "resources", resourceId), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
 };
 
 // -- TASKS --
@@ -156,4 +171,19 @@ export const updateTaskStatus = async (taskId, newStatus) => {
 
 export const deleteTask = async (taskId) => {
   await deleteDoc(doc(db, "tasks", taskId));
+};
+
+export const updateTask = async (taskId, updates) => {
+  const isCompleted = updates.status === "completed";
+  const payload = {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  };
+  
+  if (updates.status) {
+    payload.completedAt = isCompleted ? serverTimestamp() : null;
+    payload.progress = isCompleted ? 100 : updates.progress || 0;
+  }
+  
+  await updateDoc(doc(db, "tasks", taskId), payload);
 };

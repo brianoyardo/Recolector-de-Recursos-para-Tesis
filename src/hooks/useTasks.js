@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { getUserTasks, getProjectTasks, createTask, updateTaskStatus, deleteTask } from "../services/firebase/firestore";
+import { getUserTasks, getProjectTasks, createTask, updateTaskStatus, deleteTask, updateTask } from "../services/firebase/firestore";
 
 export const useTasks = (userId, projectId = null) => {
   const [tasks, setTasks] = useState([]);
@@ -54,6 +54,17 @@ export const useTasks = (userId, projectId = null) => {
     }
   };
 
+  const editTask = async (taskId, updates) => {
+    try {
+      setError(null);
+      await updateTask(taskId, updates);
+      await loadTasks();
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   const removeTask = async (taskId) => {
     try {
       setError(null);
@@ -71,6 +82,7 @@ export const useTasks = (userId, projectId = null) => {
     error,
     loadTasks,
     addTask,
+    editTask,
     removeTask,
     toggleTaskStatus
   };

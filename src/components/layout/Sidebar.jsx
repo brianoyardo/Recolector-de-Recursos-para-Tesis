@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { logoutUser } from "../../services/firebase/auth";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 import "../../styles/sidebar.css";
 
 // SVG Icons inline para no instalar librerías pesadas si no es vital (Lucide style)
@@ -12,10 +14,11 @@ const LogoutIcon = () => <svg className="nav-icon" viewBox="0 0 24 24" fill="non
 
 export const Sidebar = () => {
   const { user } = useAuth();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
-      if(window.confirm("¿Seguro que deseas salir?")) await logoutUser();
+      await logoutUser();
     } catch (error) {
       console.error("Error al cerrar sesión", error);
     }
@@ -55,7 +58,7 @@ export const Sidebar = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="btn-logout" onClick={handleLogout}>
+          <button className="btn-logout" onClick={() => setIsLogoutModalOpen(true)}>
             <LogoutIcon /> Salir
           </button>
         </div>
@@ -65,7 +68,7 @@ export const Sidebar = () => {
       {/* El AppLayout lo renderizará si está en móvil */}
       <div className="mobile-top-header">
          <div className="mobile-top-brand">Recolector</div>
-         <button className="btn-icon" onClick={handleLogout} style={{border: 'none', boxShadow: 'none'}}>
+         <button className="btn-icon" onClick={() => setIsLogoutModalOpen(true)} style={{border: 'none', boxShadow: 'none'}}>
             <LogoutIcon />
          </button>
       </div>
@@ -89,6 +92,18 @@ export const Sidebar = () => {
           <span>Tareas</span>
         </NavLink>
       </nav>
+
+      {/* UI Modal Interno: Adiós al window.confirm crudo */}
+      <ConfirmDialog 
+        isOpen={isLogoutModalOpen}
+        title="Cerrar sesión"
+        message="¿Estás seguro de que deseas salir? Tendrás que volver a ingresar tus credenciales."
+        confirmText="Salir de mi cuenta"
+        cancelText="Permanecer"
+        isDestructive={false}
+        onConfirm={handleLogout}
+        onCancel={() => setIsLogoutModalOpen(false)}
+      />
     </>
   );
 };

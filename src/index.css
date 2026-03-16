@@ -1,5 +1,6 @@
 @import './styles/layout.css';
 @import './styles/components.css';
+@import './styles/tasks.css';
 
 /* Importaciones de fuentes en Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap');

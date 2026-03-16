@@ -2,19 +2,61 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useProjects } from "../../hooks/useProjects";
 import { useTasks } from "../../hooks/useTasks";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+
+const INITIAL_FORM_STATE = { title: "", description: "", priority: "medium", dueDate: "" };
 
 export const Tasks = () => {
   const { user } = useAuth();
   const { projects, loadProjects } = useProjects(user?.uid);
   
   const [selectedProjectId, setSelectedProjectId] = useState("");
-  const { tasks, loading, error, loadTasks, addTask, toggleTaskStatus, removeTask } = useTasks(user?.uid, selectedProjectId);
+  const { tasks, loading, error, loadTasks, addTask, editTask, toggleTaskStatus, removeTask } = useTasks(user?.uid, selectedProjectId);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    title: "", description: "", priority: "medium", dueDate: ""
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [form, setForm] = useState(INITIAL_FORM_STATE);
+
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  const [confirmConfig, setConfirmConfig] = useState({
+    isOpen: false, title: "", message: "", onConfirm: () => {}, isDestructive: false, confirmText: "Confirmar"
   });
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const today = new Date(todayStr + "T00:00:00");
+
+  const activeTasks = tasks.filter(t => t.status !== 'completed' && (!t.dueDate || new Date(t.dueDate + "T00:00:00") >= today));
+  const overdueTasks = tasks.filter(t => t.status !== 'completed' && t.dueDate && new Date(t.dueDate + "T00:00:00") < today);
+  const completedTasks = tasks.filter(t => t.status === 'completed');
+
+  const onDragStart = (e, id) => {
+    e.dataTransfer.setData("taskId", id);
+  };
+
+  const onDrop = async (e, targetStatus) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData("taskId");
+    if (!taskId) return;
+    try {
+      if (targetStatus === 'completed') {
+        await editTask(taskId, { status: 'completed' });
+      } else if (targetStatus === 'pending') {
+        await editTask(taskId, { status: 'pending' });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const onDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const toggleMenu = (id) => {
+    setOpenMenuId(openMenuId === id ? null : id);
+  };
 
   // Cargar proyectos primero
   useEffect(() => {
@@ -40,21 +82,115 @@ export const Tasks = () => {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+  const openNewModal = () => {
+    setForm(INITIAL_FORM_STATE);
+    setEditingTaskId(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (task) => {
+    setForm({
+      title: task.title || "",
+      description: task.description || "",
+      priority: task.priority || "medium",
+      dueDate: task.dueDate || ""
+    });
+    setEditingTaskId(task.id);
+    setIsModalOpen(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !selectedProjectId) return;
     
     setIsSubmitting(true);
     try {
-      await addTask({ ...form, projectId: selectedProjectId });
-      setForm({ title: "", description: "", priority: "medium", dueDate: "" });
+      if (editingTaskId) {
+        await editTask(editingTaskId, form);
+      } else {
+        await addTask({ ...form, projectId: selectedProjectId });
+      }
+      setForm(INITIAL_FORM_STATE);
       setIsModalOpen(false);
+      setEditingTaskId(null);
     } catch (err) {
-      console.error("Error creating task", err);
+      console.error("Error saving task", err);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const confirmDelete = (id, title) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Eliminar Tarea",
+      message: `¿Seguro que deseas eliminar la tarea "${title}" en este proyecto?`,
+      isDestructive: true,
+      confirmText: "Eliminar",
+      onConfirm: async () => {
+        await removeTask(id);
+      }
+    });
+  };
+
+  const renderTaskCard = (task, isOverdue = false, isCompleted = false) => (
+    <div 
+      key={task.id} 
+      className={`task-card ${isCompleted ? 'completed-task' : ''}`}
+      draggable={!isCompleted}
+      onDragStart={(e) => !isCompleted && onDragStart(e, task.id)}
+    >
+      <div className="task-card-header">
+        <h3 className="task-card-title">{task.title}</h3>
+        <button className="btn-dots" onClick={() => toggleMenu(task.id)}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+
+      <div className={`mobile-task-menu ${openMenuId === task.id ? 'open' : ''}`}>
+        {!isCompleted && (
+          <button onClick={() => { toggleMenu(task.id); editTask(task.id, {status: 'completed'}); }} className="text-success">Marcar Completado</button>
+        )}
+        {isCompleted && (
+          <button onClick={() => { toggleMenu(task.id); editTask(task.id, {status: 'pending'}); }}>Regresar a Pendiente</button>
+        )}
+        {!isCompleted && (
+          <button onClick={() => { toggleMenu(task.id); openEditModal(task); }}>Editar Tarea</button>
+        )}
+        <button onClick={() => { toggleMenu(task.id); confirmDelete(task.id, task.title); }} className="text-danger">Eliminar Tarea</button>
+      </div>
+
+      <p className="task-card-desc">{task.description || "Sin descripción"}</p>
+      
+      <div className="task-card-footer">
+        <span className={`badge ${isCompleted ? 'completed' : 'pending'}`}>
+          {task.priority}
+        </span>
+        
+        {task.dueDate && !isCompleted && (
+          <div className={`task-date ${isOverdue ? 'overdue-text' : ''}`}>
+            📅 {new Date(task.dueDate + "T00:00:00").toLocaleDateString()}
+          </div>
+        )}
+        {task.completedAt && isCompleted && (
+           <div className="task-date">
+            ✅ {task.completedAt?.toDate ? task.completedAt.toDate().toLocaleDateString() : new Date(task.completedAt).toLocaleDateString()}
+          </div>
+        )}
+
+        <div className="desktop-actions">
+           {!isCompleted && (
+             <button className="btn-icon" onClick={() => openEditModal(task)} title="Editar tarea">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+             </button>
+           )}
+           <button className="btn-icon" onClick={() => confirmDelete(task.id, task.title)} title="Eliminar tarea">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+           </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -66,7 +202,7 @@ export const Tasks = () => {
         <button 
           className="btn-primary" 
           style={{ width: 'auto', marginTop: 0 }} 
-          onClick={() => setIsModalOpen(true)}
+          onClick={openNewModal}
           disabled={!projects.length}
           title={!projects.length ? "Debes crear un proyecto primero" : ""}
         >
@@ -112,58 +248,42 @@ export const Tasks = () => {
           <p>No tienes tareas pendientes para este proyecto. ¡Buen trabajo!</p>
         </div>
       ) : (
-        <div className="grid-cards">
-          {tasks.map((task) => (
-            <div key={task.id} className="card" style={{ opacity: task.status === 'completed' ? 0.6 : 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <h3 style={{ textDecoration: task.status === 'completed' ? 'line-through' : 'none' }}>
-                  {task.title}
-                </h3>
-                <input 
-                  type="checkbox" 
-                  checked={task.status === 'completed'}
-                  onChange={() => toggleTaskStatus(task.id, task.status)}
-                  style={{ width: 'auto', cursor: 'pointer' }}
-                />
-              </div>
-              
-              <p className="card-desc">
-                {task.description || "Sin descripción"}
-              </p>
-              
-              {task.dueDate && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                  📅 Vencimiento: {new Date(task.dueDate).toLocaleDateString()}
-                </div>
-              )}
-              
-              <div className="card-footer">
-                <span className={`badge ${task.status === 'completed' ? 'completed' : 'pending'}`}>
-                  Prioridad: {task.priority}
-                </span>
-                <button 
-                  className="btn-icon" 
-                  onClick={() => window.confirm("¿Eliminar esta tarea?") && removeTask(task.id)}
-                  title="Eliminar tarea"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                  </svg>
-                </button>
-              </div>
+        <div className="kanban-board">
+          {/* Columna: Activo en plazo */}
+          <div className="kanban-column active" onDragOver={onDragOver} onDrop={(e) => onDrop(e, 'pending')}>
+            <div className="kanban-column-header">
+              <span className="kanban-column-title">Activo en plazo</span>
+              <span className="kanban-column-count">{activeTasks.length}</span>
             </div>
-          ))}
+            {activeTasks.map(task => renderTaskCard(task, false, false))}
+          </div>
+
+          {/* Columna: Vencido */}
+          <div className="kanban-column overdue" onDragOver={onDragOver} onDrop={(e) => onDrop(e, 'pending')}>
+            <div className="kanban-column-header">
+              <span className="kanban-column-title">Vencido</span>
+              <span className="kanban-column-count">{overdueTasks.length}</span>
+            </div>
+            {overdueTasks.map(task => renderTaskCard(task, true, false))}
+          </div>
+
+          {/* Columna: Completado */}
+          <div className="kanban-column completed-col" onDragOver={onDragOver} onDrop={(e) => onDrop(e, 'completed')}>
+            <div className="kanban-column-header">
+              <span className="kanban-column-title">Completado</span>
+              <span className="kanban-column-count">{completedTasks.length}</span>
+            </div>
+            {completedTasks.map(task => renderTaskCard(task, false, true))}
+          </div>
         </div>
       )}
 
-      {/* Modal Creación de Tarea */}
+      {/* Modal Creación/Edición de Tarea */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h2>Crear Tarea</h2>
+              <h2>{editingTaskId ? "Editar Tarea" : "Crear Tarea"}</h2>
               <button className="btn-icon" onClick={() => setIsModalOpen(false)}>✕</button>
             </div>
             
@@ -198,13 +318,24 @@ export const Tasks = () => {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" style={{ width: 'auto', marginTop: 0 }} disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar Tarea"}
+                  {isSubmitting ? "Guardando..." : (editingTaskId ? "Guardar Cambios" : "Guardar Tarea")}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Modal genérico de Confirmación */}
+      <ConfirmDialog 
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        confirmText={confirmConfig.confirmText}
+        isDestructive={confirmConfig.isDestructive}
+      />
     </div>
   );
 };

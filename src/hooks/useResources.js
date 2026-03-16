@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { getProjectResources, createResource, deleteResource } from "../services/firebase/firestore";
+import { getProjectResources, createResource, deleteResource, updateResource } from "../services/firebase/firestore";
 
 export const useResources = (userId, projectId) => {
   const [resources, setResources] = useState([]);
@@ -42,6 +42,17 @@ export const useResources = (userId, projectId) => {
     }
   };
 
+  const editResource = async (resourceId, updates) => {
+    try {
+      setError(null);
+      await updateResource(resourceId, updates);
+      await loadResources();
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   const removeResource = async (resourceId) => {
     try {
       setError(null);
@@ -59,6 +70,7 @@ export const useResources = (userId, projectId) => {
     error,
     loadResources,
     addResource,
+    editResource,
     removeResource,
   };
 };

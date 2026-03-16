@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { getUserProjects, createProject, deleteProject } from "../services/firebase/firestore";
+import { getUserProjects, createProject, deleteProject, updateProject } from "../services/firebase/firestore";
 
 export const useProjects = (userId) => {
   const [projects, setProjects] = useState([]);
@@ -33,6 +33,17 @@ export const useProjects = (userId) => {
     }
   };
 
+  const editProject = async (projectId, updates) => {
+    try {
+      setError(null);
+      await updateProject(projectId, updates);
+      await loadProjects();
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   const removeProject = async (projectId) => {
     try {
       setError(null);
@@ -50,6 +61,7 @@ export const useProjects = (userId) => {
     error,
     loadProjects,
     addProject,
+    editProject,
     removeProject,
   };
 };
