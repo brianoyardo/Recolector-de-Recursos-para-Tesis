@@ -43,8 +43,8 @@ export const Dashboard = () => {
       const tasksResponse = await getUserTasks(user.uid);
       setTotalTasks(tasksResponse.length);
 
-      const pending = tasksResponse.filter((t) => t.status !== "Pendiente");
-      const completed = tasksResponse.filter((t) => t.status === "Completado");
+      const pending = tasksResponse.filter((t) => t.status !== "completed");
+      const completed = tasksResponse.filter((t) => t.status === "completed");
 
       setPendingTasks(pending.length);
       setCompletedTasksCount(completed.length);

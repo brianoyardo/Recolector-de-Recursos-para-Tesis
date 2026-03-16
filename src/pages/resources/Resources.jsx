@@ -65,7 +65,7 @@ export const Resources = () => {
       author: resource.author || "",
       publicationYear: resource.publicationYear || "",
       publisher: resource.publisher || "",
-      keywords: resource.keywords ? resource.keywords.join(", ") : "",
+      keywords: Array.isArray(resource.keywords) ? resource.keywords.join(", ") : "",
       status: resource.status || "pending",
       priority: resource.priority || "medium",
       notes: resource.notes || "",
