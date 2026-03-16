@@ -1,0 +1,86 @@
+/* 
+  Tokens de Diseño (Slate & Indigo Academic)
+  Variables Globales para tema limpio, profesional e investigativo
+*/
+
+:root {
+  /* Paleta Base - Slate & Indigo */
+  --bg-main: #F8FAFC;       /* Slate 50 - Fondo general relajado */
+  --surface: #FFFFFF;       /* Surfaces, Cards, Modals */
+  
+  --primary: #4F46E5;       /* Indigo 600 - Acciones primarias */
+  --primary-hover: #4338CA; /* Indigo 700 */
+  --primary-light: #EEF2FF; /* Indigo 50 */
+  
+  --secondary: #0EA5E9;     /* Sky 500 - Detalles secundarios, iconos */
+  
+  --text-main: #0F172A;     /* Slate 900 - Alta legibilidad */
+  --text-muted: #64748B;    /* Slate 500 - Textos de apoyo, subtitulos */
+  
+  --border: #E2E8F0;        /* Slate 200 - Bordes sutiles */
+  --border-focus: #CBD5E1;  /* Slate 300 */
+  
+  /* Status Colors */
+  --success: #10B981;
+  --success-bg: #D1FAE5;
+  --danger: #EF4444;
+  --danger-bg: #FEE2E2;
+  --warning: #F59E0B;
+  --warning-bg: #FEF3C7;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Shadows - Premium Elevation */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-elevation: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* Modals */
+  --shadow-float: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Typography */
+  --font-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Outfit', var(--font-base); /* Para títulos y métricas */
+}
+
+/* Layout Core Classes */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-main);
+  overflow: hidden;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
+  /* Scrollbar personalizado si se desea a futuro */
+}
+
+.app-container {
+  flex: 1;
+  padding: var(--spacing-2xl);
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Responsive Container Padding */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .app-container {
+    padding: var(--spacing-lg) var(--spacing-md) 100px var(--spacing-md); 
+    /* Bottom padding alto para la bottom nav de móvil */
+  }
+}
